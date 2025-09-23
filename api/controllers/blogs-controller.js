@@ -79,9 +79,59 @@ const getBlogDetail = async (req, res) => {
   }
 };
 
+const updateBlog = async (req, res) => {
+  try {
+    const { id } = req.params;
+    if (!id) {
+      return res.status(400).json({ success: false, message: "id is required" });
+    }
+
+    const { heading, description, images, detail, tags } = req.body || {};
+
+    const existing = await Blogs.findById(id);
+    if (!existing) {
+      return res.status(404).json({ success: false, message: "Blog not found" });
+    }
+
+    existing.heading = heading;
+    existing.description = description;
+    existing.images = images;
+    existing.detail = detail || [];
+    existing.tags = tags || [];
+
+    const updated = await existing.save();
+    return res.status(200).json({ success: true, message: "Blog updated successfully", data: updated });
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({ success: false, message: "Internal Server Error" });
+  }
+};
+
+const deleteBlog = async (req, res) => {
+  try {
+    const { id } = req.params;
+    if (!id) {
+      return res.status(400).json({ success: false, message: "id is required" });
+    }
+
+    const blog = await Blogs.findById(id);
+    if (!blog) {
+      return res.status(404).json({ success: false, message: "Blog not found" });
+    }
+
+    await blog.deleteOne();
+    return res.status(200).json({ success: true, message: "Blog deleted successfully" });
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({ success: false, message: "Internal Server Error" });
+  }
+};
+
 module.exports = {
   uploadImageController,
   getBlogDetail,
   createBlogs,
   getBlogs,
+  updateBlog,
+  deleteBlog,
 };
